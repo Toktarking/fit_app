@@ -665,3 +665,359 @@ textarea {
 .push-button:hover {
     background: #1f2f7a;
 }
+
+
+
+/* Улучшение мобильной версии */
+
+@media (max-width: 720px) {
+    body {
+        font-size: 15px;
+    }
+
+    .container {
+        width: 94%;
+    }
+
+    .main-content {
+        padding: 20px 0 90px;
+    }
+
+    .site-title {
+        font-size: 22px;
+    }
+
+    .site-subtitle {
+        font-size: 13px;
+    }
+
+    .main-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-nav a,
+    .logout-button {
+        flex: 0 0 auto;
+        width: auto;
+        white-space: nowrap;
+        font-size: 12px;
+        padding: 7px 9px;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .circle-menu {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin: 18px 0;
+    }
+
+    .circle-item {
+        padding: 16px 10px;
+        border-radius: 16px;
+    }
+
+    .circle-icon {
+        width: 58px;
+        height: 58px;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .circle-title {
+        font-size: 15px;
+    }
+
+    .circle-subtitle {
+        font-size: 12px;
+    }
+
+    .card {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .schedule-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .live-clock {
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+
+    #live-clock-time {
+        font-size: 16px;
+    }
+
+    .schedule-item {
+        grid-template-columns: 58px 1fr;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .schedule-time {
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .schedule-title {
+        font-size: 16px;
+    }
+
+    .schedule-description {
+        font-size: 14px;
+    }
+
+    .action-links {
+        margin-bottom: 30px;
+    }
+}
+
+
+/* Более компактная мобильная версия */
+
+@media (max-width: 720px) {
+    body {
+        font-size: 14px;
+        background: #f4f6f8;
+    }
+
+    .container {
+        width: 94%;
+    }
+
+    .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .header-inner {
+        padding: 14px 0 10px;
+    }
+
+    .site-title {
+        font-size: 24px;
+        line-height: 1.1;
+    }
+
+    .site-subtitle {
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .main-nav {
+        margin-top: 12px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-nav a,
+    .logout-button {
+        flex: 0 0 auto;
+        width: auto;
+        white-space: nowrap;
+        font-size: 12px;
+        padding: 7px 10px;
+        border-radius: 9px;
+    }
+
+    .main-content {
+        padding: 20px 0 90px;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        font-size: 18px;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 12px 0;
+    }
+
+    .stat-card {
+        padding: 12px;
+        border-radius: 13px;
+        min-height: 82px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        line-height: 1.2;
+        margin-top: 8px;
+    }
+
+    .circle-menu {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 18px 0;
+    }
+
+    .circle-item {
+        padding: 13px 8px;
+        border-radius: 16px;
+        min-height: 118px;
+    }
+
+    .circle-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .circle-title {
+        font-size: 14px;
+        line-height: 1.2;
+        margin-bottom: 4px;
+    }
+
+    .circle-subtitle {
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .card {
+        padding: 14px;
+        border-radius: 15px;
+        margin-bottom: 14px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .schedule-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .live-clock {
+        padding: 6px 9px;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .live-clock-label {
+        font-size: 11px;
+    }
+
+    #live-clock-time {
+        font-size: 14px;
+    }
+
+    .schedule-list {
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    .schedule-item {
+        grid-template-columns: 54px 1fr;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 13px;
+    }
+
+    .schedule-time {
+        font-size: 15px;
+        text-align: center;
+    }
+
+    .schedule-title {
+        font-size: 15px;
+        margin-bottom: 2px;
+    }
+
+    .schedule-description {
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .status-done,
+    .status-pending {
+        font-size: 13px;
+    }
+
+    .action-links {
+        gap: 8px;
+        margin: 14px 0 28px;
+    }
+
+    .action-links a {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    button,
+    input[type="submit"] {
+        font-size: 13px;
+        padding: 8px 11px;
+    }
+
+    input,
+    select,
+    textarea {
+        max-width: 100%;
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        padding: 9px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 380px) {
+    .circle-menu {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .site-title {
+        font-size: 22px;
+    }
+}
