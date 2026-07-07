@@ -1,0 +1,49 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Варианты: {{ meal_type_display }}</h2>
+
+<p>Цель по калориям на этот прием пищи: примерно {{ target_calories }} ккал</p>
+
+{% if current_meal %}
+    <p>
+        Сейчас выбрано:
+        <strong>{{ current_meal.dish.title }}</strong>
+    </p>
+{% endif %}
+
+{% if options %}
+    <ul>
+        {% for dish in options %}
+            <li>
+                <h3>{{ dish.title }}</h3>
+                <p>
+                    {{ dish.calories }} ккал |
+                    белок {{ dish.protein_g }} г |
+                    жиры {{ dish.fat_g }} г |
+                    углеводы {{ dish.carbs_g }} г
+                </p>
+                <p>{{ dish.description }}</p>
+
+
+                <a href="{% url 'planner:choose_dish' day_plan.id meal_type dish.id %}">
+                    Выбрать это блюдо
+                </a>
+
+                |
+
+                <a href="{% url 'planner:dish_feedback' day_plan.id meal_type dish.id %}">
+                    Не подходит
+                </a>
+
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Пока нет подходящих блюд. Добавьте больше блюд в админке.</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'planner:today' %}">Назад</a>
+</p>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Что вы едите?</h2>
+
+<p>
+    Отметьте продукты, которые вам подходят или не подходят.
+    Если выбрать “не ем”, “не люблю” или “аллергия”, приложение не будет предлагать блюда с этим продуктом.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for category, foods in grouped_foods.items %}
+        <h3>{{ category }}</h3>
+
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Продукт</th>
+                <th>Не выбрано</th>
+                <th>Ем</th>
+                <th>Не люблю</th>
+                <th>Не ем</th>
+                <th>Аллергия</th>
+            </tr>
+
+            {% for food in foods %}
+                <tr>
+                    <td>{{ food.name }}</td>
+
+                    <td>
+                        <input
+                            type="radio"
+                            name="food_{{ food.id }}"
+                            value="not_set"
+                            {% if food.current_status == "not_set" %}checked{% endif %}
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="radio"
+                            name="food_{{ food.id }}"
+                            value="like"
+                            {% if food.current_status == "like" %}checked{% endif %}
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="radio"
+                            name="food_{{ food.id }}"
+                            value="dislike"
+                            {% if food.current_status == "dislike" %}checked{% endif %}
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="radio"
+                            name="food_{{ food.id }}"
+                            value="avoid"
+                            {% if food.current_status == "avoid" %}checked{% endif %}
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="radio"
+                            name="food_{{ food.id }}"
+                            value="allergy"
+                            {% if food.current_status == "allergy" %}checked{% endif %}
+                        >
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+
+    <br>
+
+    <button type="submit" name="action" value="save">
+        Сохранить
+    </button>
+
+    <button type="submit" name="action" value="save_and_regenerate">
+        Сохранить и обновить питание на неделю
+    </button>
+</form>
+{% endblock %}

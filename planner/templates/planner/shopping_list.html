@@ -1,0 +1,15 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Список покупок на неделю {{ week_number }}</h2>
+
+{% if shopping_text %}
+    <pre>{{ shopping_text }}</pre>
+{% else %}
+    <p>Список пустой. Сначала сгенерируйте питание на неделю.</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'planner:week' week_number %}">Назад к неделе</a>
+</p>
+{% endblock %}

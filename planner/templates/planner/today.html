@@ -1,0 +1,378 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+
+<h2>Сегодня</h2>
+
+{% if day_plan %}
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Дата</div>
+            <div class="stat-value">{{ day_plan.date }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">День программы</div>
+            <div class="stat-value">{{ day_plan.day_number }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Неделя</div>
+            <div class="stat-value">{{ day_plan.week_number }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Выполнение дня</div>
+            <div class="stat-value">{{ completion_percent }}%</div>
+        </div>
+    </div>
+
+    <div class="action-links">
+        <a href="{% url 'planner:week' day_plan.week_number %}">
+            Открыть неделю
+        </a>
+
+        <a href="{% url 'planner:shopping_list' day_plan.week_number %}">
+            Список покупок
+        </a>
+
+        <a href="{% url 'planner:daily_checkin' day_plan.id %}">
+            Ежедневный отчет
+        </a>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Прогресс дня</h3>
+
+        <p>
+            Выполнено:
+            <strong>{{ completed_tasks }}</strong>
+            из
+            <strong>{{ total_tasks }}</strong>
+            задач
+        </p>
+
+        {% if checkin %}
+            <p class="status-done">
+                ✅ Ежедневный отчет уже заполнен.
+            </p>
+        {% else %}
+            <p class="status-pending">
+                ⏳ Ежедневный отчет еще не заполнен.
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Цель еды</div>
+            <div class="stat-value">{{ day_plan.calories_goal }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">План питания</div>
+            <div class="stat-value">{{ planned_meal_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Съедено отмечено</div>
+            <div class="stat-value">{{ completed_meal_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Дополнительно</div>
+            <div class="stat-value">{{ extra_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Всего съедено</div>
+            <div class="stat-value">{{ total_eaten_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Тренировки</div>
+            <div class="stat-value">≈ {{ total_calories_burned }} ккал</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Баланс еды</h3>
+
+        <p>
+            <strong>Цель еды:</strong>
+            {{ day_plan.calories_goal }} ккал
+        </p>
+
+        <p>
+            <strong>Всего съедено:</strong>
+            {{ total_eaten_calories }} ккал
+        </p>
+
+        {% if remaining_calories >= 0 %}
+            <p class="status-done">
+                Осталось: {{ remaining_calories }} ккал
+            </p>
+        {% else %}
+            <p class="status-pending">
+                Перебор: {{ over_calories }} ккал
+            </p>
+        {% endif %}
+
+        <p>
+            <strong>Важно:</strong>
+            тренировки показываются отдельно и не прибавляются автоматически к цели еды.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Утро</h3>
+
+        <p>
+            <span class="badge">{{ day_plan.get_morning_activity_display }}</span>
+        </p>
+
+        <p>
+            <strong>Длительность:</strong>
+            {{ day_plan.morning_duration_minutes }} минут
+        </p>
+
+        <p>
+            <strong>Примерно сожжено:</strong>
+            ≈ {{ day_plan.morning_calories_burned }} ккал
+        </p>
+
+        {% if day_plan.morning_details %}
+            <p style="white-space: pre-line;">{{ day_plan.morning_details }}</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'planner:toggle_morning_completed' day_plan.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'planner:today' %}">
+
+            {% if day_plan.morning_completed %}
+                <button type="submit">Отменить выполнение</button>
+                <span class="status-done">✅ выполнено</span>
+            {% else %}
+                <button type="submit">Отметить выполненным</button>
+                <span class="status-pending">⏳ не выполнено</span>
+            {% endif %}
+        </form>
+    </div>
+<div class="card">
+    <h3 class="card-title">Вечер</h3>
+
+    <p>
+        <span class="badge">{{ day_plan.get_evening_activity_display }}</span>
+    </p>
+
+    {% if day_plan.evening_duration_minutes %}
+        <p>
+            <strong>Длительность:</strong>
+            {{ day_plan.evening_duration_minutes }} минут
+        </p>
+
+        <p>
+            <strong>Примерно сожжено:</strong>
+            ≈ {{ day_plan.evening_calories_burned }} ккал
+        </p>
+
+        {% if day_plan.evening_details %}
+            <p style="white-space: pre-line;">{{ day_plan.evening_details }}</p>
+        {% endif %}
+
+        {% if day_plan.workout_template %}
+            <h4>{{ day_plan.workout_template.title }}</h4>
+
+            <p>{{ day_plan.workout_template.description }}</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>Упражнение</th>
+                        <th>Подходы</th>
+                        <th>Повторы</th>
+                        <th>Отдых</th>
+                        <th>Минуты</th>
+                    </tr>
+
+                    {% for item in day_plan.workout_template.exercises.all %}
+                        <tr>
+                            <td>{{ item.exercise.name }}</td>
+                            <td>{{ item.sets }}</td>
+                            <td>{{ item.reps }}</td>
+                            <td>{{ item.rest_seconds }} сек.</td>
+                            <td>{{ item.estimated_minutes }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            {% if day_plan.workout_session %}
+                {% if day_plan.workout_session.is_finished %}
+                    <p class="status-done">
+                        ✅ Тренировка завершена
+                    </p>
+                {% else %}
+                    <div class="action-links">
+                        <a href="{% url 'planner:workout_session' day_plan.workout_session.id %}">
+                            Продолжить тренировку
+                        </a>
+                    </div>
+
+                    <p class="status-pending">
+                        ⏳ тренировка начата, но не завершена
+                    </p>
+
+                    <p>
+                        Выполнено упражнений:
+                        {{ day_plan.workout_session.completed_exercises_count }}
+                        из
+                        {{ day_plan.workout_session.total_exercises_count }}
+                    </p>
+                {% endif %}
+            {% else %}
+                <div class="action-links">
+                    <a href="{% url 'planner:start_workout_session' day_plan.id %}">
+                        Начать тренировку
+                    </a>
+                </div>
+
+                <p class="status-pending">
+                    ⏳ не выполнено
+                </p>
+            {% endif %}
+
+        {% else %}
+            {% if day_plan.evening_activity != "rest" %}
+                <form method="post" action="{% url 'planner:toggle_evening_completed' day_plan.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'planner:today' %}">
+
+                    {% if day_plan.evening_completed %}
+                        <button type="submit">Отменить выполнение</button>
+                        <span class="status-done">✅ выполнено</span>
+                    {% else %}
+                        <button type="submit">Отметить выполненным</button>
+                        <span class="status-pending">⏳ не выполнено</span>
+                    {% endif %}
+                </form>
+            {% endif %}
+        {% endif %}
+
+    {% else %}
+        <p>Сегодня вечером отдых.</p>
+    {% endif %}
+</div>
+
+    <div class="card">
+        <h3 class="card-title">Питание</h3>
+
+        {% for meal in meals %}
+            <div class="card">
+                <h4>
+                    {{ meal.get_meal_type_display }}:
+                    <a href="{% url 'planner:dish_detail' meal.dish.id %}">
+                        {{ meal.dish.title }}
+                    </a>
+                </h4>
+
+                <p>
+                    <strong>{{ meal.dish.calories }} ккал</strong>
+                    |
+                    белки {{ meal.dish.protein_g }} г
+                    |
+                    жиры {{ meal.dish.fat_g }} г
+                    |
+                    углеводы {{ meal.dish.carbs_g }} г
+                </p>
+
+                <p>
+                    <strong>Время:</strong>
+                    {{ meal.meal_time }}
+                </p>
+
+                <form method="post" action="{% url 'planner:toggle_meal_completed' meal.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'planner:today' %}">
+
+                    {% if meal.is_completed %}
+                        <button type="submit">Отменить</button>
+                        <span class="status-done">✅ съедено</span>
+                    {% else %}
+                        <button type="submit">Отметить съеденным</button>
+                        <span class="status-pending">⏳ не съедено</span>
+                    {% endif %}
+                </form>
+
+                <div class="action-links">
+                    <a href="{% url 'planner:meal_options' day_plan.id meal.meal_type %}">
+                        Заменить блюдо
+                    </a>
+
+                    <a href="{% url 'planner:dish_feedback' day_plan.id meal.meal_type meal.dish.id %}">
+                        Не подходит
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <p>Питание на сегодня еще не сгенерировано.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Дополнительная еда вне плана</h3>
+
+        <p>
+            Если вы съели что-то вне плана, добавьте это сюда.
+            Приложение учтет это в дневной статистике и недельном анализе.
+        </p>
+
+        <div class="action-links">
+            <a href="{% url 'planner:add_extra_food' day_plan.id %}">
+                Добавить еду вне плана
+            </a>
+        </div>
+
+        {% if extra_foods %}
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>Что съели</th>
+                        <th>Количество</th>
+                        <th>Калории</th>
+                        <th>Комментарий</th>
+                        <th>Действие</th>
+                    </tr>
+
+                    {% for item in extra_foods %}
+                        <tr>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.quantity_description }}</td>
+                            <td>{{ item.calories }} ккал</td>
+                            <td>{{ item.note }}</td>
+                            <td>
+                                <form method="post" action="{% url 'planner:delete_extra_food' item.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <p>Дополнительной еды пока нет.</p>
+        {% endif %}
+    </div>
+
+    {% if day_plan.notes %}
+        <div class="card">
+            <h3 class="card-title">Заметки на день</h3>
+            <p style="white-space: pre-line;">{{ day_plan.notes }}</p>
+        </div>
+    {% endif %}
+
+
+
+{% endif %}
+{% endblock %}

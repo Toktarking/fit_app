@@ -1,0 +1,405 @@
+{% extends "planner/base.html" %}
+{% load webpush_notifications %}
+
+{% block content %}
+
+<h2>Главная</h2>
+
+{% if not profile %}
+    <div class="card">
+        <h3 class="card-title">Сначала заполните профиль</h3>
+        <p>Чтобы приложение рассчитало калории, питание и тренировки, нужно заполнить анкету.</p>
+
+        <div class="action-links">
+            <a href="{% url 'planner:profile_form' %}">Заполнить профиль</a>
+        </div>
+    </div>
+
+{% elif not program %}
+    <div class="card">
+        <h3 class="card-title">Создайте программу</h3>
+        <p>Профиль заполнен. Теперь можно создать программу на 12 недель.</p>
+
+        <div class="action-links">
+            <a href="{% url 'planner:create_program' %}">Создать программу</a>
+        </div>
+    </div>
+
+{% elif day_plan %}
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Дата</div>
+            <div class="stat-value">{{ day_plan.date }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">День программы</div>
+            <div class="stat-value">{{ day_plan.day_number }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Неделя</div>
+            <div class="stat-value">{{ day_plan.week_number }}</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Выполнение дня</div>
+            <div class="stat-value">{{ completion_percent }}%</div>
+        </div>
+    </div>
+
+
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Цель еды</div>
+            <div class="stat-value">{{ day_plan.calories_goal }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">План питания</div>
+            <div class="stat-value">{{ planned_meal_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Всего съедено</div>
+            <div class="stat-value">{{ total_eaten_calories }} ккал</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Тренировки</div>
+            <div class="stat-value">≈ {{ total_calories_burned }} ккал</div>
+        </div>
+    </div>
+
+
+    <div class="card">
+        <h3 class="card-title">Уведомления</h3>
+
+        <p>
+            Включите уведомления, чтобы приложение могло напоминать о питании,
+            тренировках и ежедневном отчете.
+        </p>
+
+        <div class="action-links">
+            {% webpush_button with_class="push-button" %}
+        </div>
+
+        <form method="post" action="{% url 'planner:send_test_push' %}">
+            {% csrf_token %}
+            <button type="submit">Отправить тестовое уведомление</button>
+        </form>
+    </div>
+    
+
+
+    <div class="circle-menu">
+        <a
+            class="circle-item js-circle-time"
+            href="{% url 'planner:today_section' 'morning' %}"
+            data-time="07:30"
+            data-completed="{% if day_plan.morning_completed %}true{% else %}false{% endif %}"
+        >
+            <div class="circle-icon">🌅</div>
+            <div class="circle-title">Утро</div>
+            <div class="circle-subtitle">
+                {{ day_plan.get_morning_activity_display }}
+            </div>
+        </a>
+
+        <a
+            class="circle-item js-circle-nutrition"
+            href="{% url 'planner:today_section' 'nutrition' %}"
+        >
+            <div class="circle-icon">🍽️</div>
+            <div class="circle-title">Питание</div>
+            <div class="circle-subtitle">
+                {{ planned_meal_calories }} ккал
+            </div>
+        </a>
+
+        {% if day_plan.evening_duration_minutes and day_plan.evening_activity != "rest" %}
+            <a
+                class="circle-item js-circle-time"
+                href="{% url 'planner:today_section' 'evening' %}"
+                data-time="19:00"
+                data-completed="{% if day_plan.evening_completed %}true{% else %}false{% endif %}"
+            >
+                <div class="circle-icon">🏋️</div>
+                <div class="circle-title">Вечер</div>
+                <div class="circle-subtitle">
+                    {{ day_plan.get_evening_activity_display }}
+                </div>
+            </a>
+        {% else %}
+            <a
+                class="circle-item circle-upcoming"
+                href="{% url 'planner:today_section' 'evening' %}"
+            >
+                <div class="circle-icon">😴</div>
+                <div class="circle-title">Вечер</div>
+                <div class="circle-subtitle">
+                    Отдых
+                </div>
+            </a>
+        {% endif %}
+
+        <a
+            class="circle-item {% if extra_calories > 0 %}circle-overdue{% else %}circle-done{% endif %}"
+            href="{% url 'planner:today_section' 'extra' %}"
+        >
+            <div class="circle-icon">➕</div>
+            <div class="circle-title">Вне плана</div>
+            <div class="circle-subtitle">
+                {{ extra_calories }} ккал
+            </div>
+        </a>
+
+        <a
+            class="circle-item js-circle-time"
+            href="{% url 'planner:today_section' 'checkin' %}"
+            data-time="21:30"
+            data-completed="{% if checkin %}true{% else %}false{% endif %}"
+        >
+            <div class="circle-icon">📝</div>
+            <div class="circle-title">Отчет</div>
+            <div class="circle-subtitle">
+                {% if checkin %}
+                    заполнен
+                {% else %}
+                    не заполнен
+                {% endif %}
+            </div>
+        </a>
+    </div>
+
+
+
+    <div class="card">
+        <div class="schedule-header">
+            <h3 class="card-title">Распорядок дня</h3>
+
+            <div class="live-clock">
+                <span class="live-clock-label">Сейчас</span>
+                <span id="live-clock-time">--:--:--</span>
+            </div>
+        </div>
+
+        <p>
+            Примерное расписание на сегодня: когда делать активность, когда есть
+            и когда заполнить ежедневный отчет.
+        </p>
+
+
+
+
+
+
+
+        <div class="schedule-list">
+            {% for item in daily_schedule %}
+
+                {% if item.meal_id %}
+                    <a
+                        class="schedule-item js-schedule-item js-schedule-meal"
+                        href="{% url 'planner:today_meal_detail' item.meal_id %}"
+                        data-time="{{ item.time|time:'H:i' }}"
+                        data-completed="{% if item.is_completed %}true{% else %}false{% endif %}"
+                    >
+                {% else %}
+                    <a
+                        class="schedule-item js-schedule-item"
+                        href="{% url 'planner:today_section' item.section %}"
+                        data-time="{{ item.time|time:'H:i' }}"
+                        data-completed="{% if item.is_completed %}true{% else %}false{% endif %}"
+                    >
+                {% endif %}
+
+                    <div class="schedule-time">
+                        {{ item.time|time:"H:i" }}
+                    </div>
+
+                    <div class="schedule-content">
+                        <div class="schedule-title">
+                            {{ item.title }}
+                        </div>
+
+                        <div class="schedule-description">
+                            {{ item.description }}
+                        </div>
+
+                        {% if item.status_text %}
+                            <div class="{{ item.status_class }}">
+                                {{ item.status_text }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </a>
+
+            {% empty %}
+                <p>На сегодня пока нет расписания.</p>
+            {% endfor %}
+        </div>
+
+
+    </div>
+    
+
+    <div class="action-links">
+        <a href="{% url 'planner:today' %}">Полная страница сегодня</a>
+        <a href="{% url 'planner:week' day_plan.week_number %}">Открыть неделю</a>
+        <a href="{% url 'planner:shopping_list' day_plan.week_number %}">Список покупок</a>
+    </div>
+
+{% else %}
+    <div class="card">
+        <p>На сегодня пока нет плана.</p>
+    </div>
+{% endif %}
+
+<script>
+    function updateLiveClock() {
+        const now = new Date();
+
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+
+        const clockElement = document.getElementById("live-clock-time");
+
+        if (clockElement) {
+            clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+    }
+
+    function scheduleTimeToSeconds(timeString) {
+        const parts = timeString.split(":");
+        const hours = Number(parts[0]);
+        const minutes = Number(parts[1]);
+
+        return hours * 3600 + minutes * 60;
+    }
+
+    function getCurrentSeconds() {
+        const now = new Date();
+
+        return (
+            now.getHours() * 3600 +
+            now.getMinutes() * 60 +
+            now.getSeconds()
+        );
+    }
+
+    function removeStatusClasses(element, prefix) {
+        element.classList.remove(
+            `${prefix}-upcoming`,
+            `${prefix}-done`,
+            `${prefix}-overdue`
+        );
+    }
+
+    function applyTimeStatus(element, currentSeconds) {
+        const scheduledTime = element.dataset.time;
+        const isCompleted = element.dataset.completed === "true";
+
+        const scheduledSeconds = scheduleTimeToSeconds(scheduledTime);
+
+        if (isCompleted) {
+            return "done";
+        }
+
+        if (currentSeconds < scheduledSeconds) {
+            return "upcoming";
+        }
+
+        return "overdue";
+    }
+
+    function updateScheduleColors() {
+        const currentSeconds = getCurrentSeconds();
+        const items = document.querySelectorAll(".js-schedule-item");
+
+        items.forEach(function(item) {
+            const status = applyTimeStatus(item, currentSeconds);
+
+            item.classList.remove(
+                "schedule-upcoming",
+                "schedule-done",
+                "schedule-overdue"
+            );
+
+            item.classList.add(`schedule-${status}`);
+        });
+    }
+
+    function updateCircleTimeColors() {
+        const currentSeconds = getCurrentSeconds();
+        const items = document.querySelectorAll(".js-circle-time");
+
+        items.forEach(function(item) {
+            const status = applyTimeStatus(item, currentSeconds);
+
+            item.classList.remove(
+                "circle-upcoming",
+                "circle-done",
+                "circle-overdue"
+            );
+
+            item.classList.add(`circle-${status}`);
+        });
+    }
+
+    function updateNutritionCircleColor() {
+        const currentSeconds = getCurrentSeconds();
+        const nutritionCircle = document.querySelector(".js-circle-nutrition");
+        const mealItems = document.querySelectorAll(".js-schedule-meal");
+
+        if (!nutritionCircle) {
+            return;
+        }
+
+        let hasOverdueMeal = false;
+        let allMealsCompleted = mealItems.length > 0;
+
+        mealItems.forEach(function(item) {
+            const scheduledTime = item.dataset.time;
+            const isCompleted = item.dataset.completed === "true";
+            const scheduledSeconds = scheduleTimeToSeconds(scheduledTime);
+
+            if (!isCompleted) {
+                allMealsCompleted = false;
+
+                if (currentSeconds >= scheduledSeconds) {
+                    hasOverdueMeal = true;
+                }
+            }
+        });
+
+        nutritionCircle.classList.remove(
+            "circle-upcoming",
+            "circle-done",
+            "circle-overdue"
+        );
+
+        if (hasOverdueMeal) {
+            nutritionCircle.classList.add("circle-overdue");
+        } else if (allMealsCompleted) {
+            nutritionCircle.classList.add("circle-done");
+        } else {
+            nutritionCircle.classList.add("circle-upcoming");
+        }
+    }
+
+    function updateDashboardTime() {
+        updateLiveClock();
+        updateScheduleColors();
+        updateCircleTimeColors();
+        updateNutritionCircleColor();
+    }
+
+    updateDashboardTime();
+    setInterval(updateDashboardTime, 1000);
+</script>
+
+{% endblock %}

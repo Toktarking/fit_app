@@ -1,0 +1,92 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+
+<div class="action-links">
+    <a href="{% url 'planner:dashboard' %}">← Назад на главную</a>
+    <a href="{% url 'planner:today_section' 'nutrition' %}">Все питание</a>
+</div>
+
+<h2>{{ meal.get_meal_type_display }}</h2>
+
+<div class="card">
+    <h3 class="card-title">
+        <a href="{% url 'planner:dish_detail' dish.id %}">
+            {{ dish.title }}
+        </a>
+    </h3>
+
+    <p>
+        <strong>Время:</strong>
+        {{ meal.meal_time }}
+    </p>
+
+    <p>
+        <strong>Калории:</strong>
+        {{ dish.calories }} ккал
+    </p>
+
+    <p>
+        <strong>Белки:</strong> {{ dish.protein_g }} г<br>
+        <strong>Жиры:</strong> {{ dish.fat_g }} г<br>
+        <strong>Углеводы:</strong> {{ dish.carbs_g }} г
+    </p>
+
+    <p>
+        <strong>Время приготовления:</strong>
+        {{ dish.cooking_time_minutes }} минут
+    </p>
+
+    {% if meal.is_completed %}
+        <p class="status-done">✅ съедено</p>
+    {% else %}
+        <p class="status-pending">⏳ не съедено</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'planner:toggle_meal_completed' meal.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'planner:today_meal_detail' meal.id %}">
+
+        {% if meal.is_completed %}
+            <button type="submit">Снять отметку</button>
+        {% else %}
+            <button type="submit">Отметить съеденным</button>
+        {% endif %}
+    </form>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Ингредиенты</h3>
+
+    <ul>
+        {% for ingredient in dish.ingredients.all %}
+            <li>
+                {{ ingredient.food.name }} — {{ ingredient.grams }} г
+            </li>
+        {% empty %}
+            <li>Ингредиенты пока не добавлены.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Способ приготовления</h3>
+
+    {% if dish.cooking_steps %}
+        <p style="white-space: pre-line;">{{ dish.cooking_steps }}</p>
+    {% else %}
+        <p>Способ приготовления пока не добавлен.</p>
+    {% endif %}
+</div>
+
+<div class="action-links">
+    <a href="{% url 'planner:meal_options' day_plan.id meal.meal_type %}">
+        Заменить блюдо
+    </a>
+
+    <a href="{% url 'planner:dish_feedback' day_plan.id meal.meal_type dish.id %}">
+        Не подходит
+    </a>
+</div>
+
+{% endblock %}

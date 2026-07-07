@@ -1,0 +1,101 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Почему блюдо не подходит?</h2>
+
+<h3>{{ dish.title }}</h3>
+
+<p>
+    {{ dish.calories }} ккал |
+    белок {{ dish.protein_g }} г |
+    жиры {{ dish.fat_g }} г |
+    углеводы {{ dish.carbs_g }} г
+</p>
+
+<p>{{ dish.description }}</p>
+
+<h3>Ингредиенты</h3>
+
+<ul>
+    {% for ingredient in dish.ingredients.all %}
+        <li>
+            {{ ingredient.food.name }} — {{ ingredient.grams }} г
+        </li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Вариант 1: не показывать это блюдо</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="action" value="avoid_dish">
+
+    <p>
+        Если вам не нравится именно это блюдо, но сами продукты вы едите,
+        выберите этот вариант.
+    </p>
+
+    <button type="submit">
+        Не показывать это блюдо
+    </button>
+</form>
+
+<hr>
+
+<h3>Вариант 2: я не ем один из продуктов</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="action" value="avoid_food">
+
+    <p>Выберите продукт:</p>
+
+    {% for ingredient in dish.ingredients.all %}
+        <p>
+            <label>
+                <input type="radio" name="food_id" value="{{ ingredient.food.id }}" required>
+                {{ ingredient.food.name }}
+            </label>
+        </p>
+    {% endfor %}
+
+    <p>Причина:</p>
+
+    <p>
+        <label>
+            <input type="radio" name="status" value="dislike" checked>
+            Не люблю
+        </label>
+    </p>
+
+    <p>
+        <label>
+            <input type="radio" name="status" value="avoid">
+            Не ем
+        </label>
+    </p>
+
+    <p>
+        <label>
+            <input type="radio" name="status" value="allergy">
+            Аллергия
+        </label>
+    </p>
+
+    <button type="submit">
+        Сохранить продукт как неподходящий
+    </button>
+</form>
+
+<hr>
+
+<p>
+    <a href="{% url 'planner:meal_options' day_plan.id meal_type %}">
+        Назад к вариантам
+    </a>
+</p>
+{% endblock %}

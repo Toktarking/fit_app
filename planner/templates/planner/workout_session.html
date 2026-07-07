@@ -1,0 +1,188 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+
+<h2>{{ session.workout_template.title }}</h2>
+
+<div class="card">
+    <p>
+        <strong>Дата:</strong> {{ day_plan.date }}
+    </p>
+
+    <p>
+        <strong>Статус:</strong> {{ session.get_status_display }}
+    </p>
+
+    <p>
+        <strong>Начало:</strong> {{ session.started_at }}
+    </p>
+
+    {% if session.finished_at %}
+        <p>
+            <strong>Завершена:</strong> {{ session.finished_at }}
+        </p>
+    {% endif %}
+
+    <p>
+        <strong>Таймер тренировки:</strong>
+        <span id="workout-timer">00:00:00</span>
+    </p>
+
+    <p>
+        <strong>Выполнено упражнений:</strong>
+        {{ session.completed_exercises_count }} из {{ session.total_exercises_count }}
+    </p>
+
+    <p>
+        <strong>Прогресс:</strong>
+        {{ session.completion_percent }}%
+    </p>
+
+    {% if not session.can_finish and not session.is_finished %}
+        <p class="status-pending">
+            Чтобы завершить тренировку, нужно вручную отметить все упражнения.
+            Осталось: {{ session.remaining_exercises_count }}
+        </p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3 class="card-title">Упражнения</h3>
+
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Статус</th>
+                <th>Упражнение</th>
+                <th>Подходы</th>
+                <th>Повторы</th>
+                <th>Отдых</th>
+                <th>Минуты</th>
+                <th>Действие</th>
+            </tr>
+
+            {% for item in session_exercises %}
+                <tr>
+                    <td>
+                        {% if item.is_completed %}
+                            <span class="status-done">✅ выполнено</span>
+                        {% else %}
+                            <span class="status-pending">⏳ не выполнено</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ item.template_exercise.exercise.name }}
+                    </td>
+
+                    <td>
+                        {{ item.template_exercise.sets }}
+                    </td>
+
+                    <td>
+                        {{ item.template_exercise.reps }}
+                    </td>
+
+                    <td>
+                        {{ item.template_exercise.rest_seconds }} сек.
+                    </td>
+
+                    <td>
+                        {{ item.template_exercise.estimated_minutes }}
+                    </td>
+
+                    <td>
+                        {% if not session.is_finished %}
+                            <form method="post" action="{% url 'planner:toggle_workout_exercise' item.id %}">
+                                {% csrf_token %}
+
+                                {% if item.is_completed %}
+                                    <button type="submit">Отменить</button>
+                                {% else %}
+                                    <button type="submit">Отметить</button>
+                                {% endif %}
+                            </form>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">
+                        Упражнения пока не добавлены.
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{% if not session.is_finished %}
+    <div class="card">
+        <h3 class="card-title">Завершение тренировки</h3>
+
+        {% if session.can_finish %}
+            <p class="status-done">
+                ✅ Все упражнения отмечены. Теперь тренировку можно завершить.
+            </p>
+        {% else %}
+            <p class="status-pending">
+                ⏳ Тренировка еще не выполнена полностью.
+                Отмечено {{ session.completed_exercises_count }} из {{ session.total_exercises_count }} упражнений.
+            </p>
+
+            <p>
+                Если нажать кнопку ниже сейчас, тренировка не будет засчитана.
+                Вы вернетесь на главную страницу и сможете продолжить позже.
+            </p>
+        {% endif %}
+
+        <form method="post" action="{% url 'planner:finish_workout_session' session.id %}">
+            {% csrf_token %}
+
+            {% if session.can_finish %}
+                <button type="submit">Закончить тренировку</button>
+            {% else %}
+                <button type="submit">Вернуться без завершения</button>
+            {% endif %}
+        </form>
+    </div>
+{% else %}
+    <div class="card">
+        <p class="status-done">
+            ✅ Тренировка завершена.
+        </p>
+    </div>
+{% endif %}
+
+<div class="action-links">
+    <a href="{% url 'planner:today' %}">
+        Вернуться на страницу Сегодня
+    </a>
+</div>
+
+<script>
+    const startedAt = new Date("{{ session.started_at|date:'c' }}");
+
+    function updateWorkoutTimer() {
+        const now = new Date();
+        let diff = Math.floor((now - startedAt) / 1000);
+
+        if (diff < 0) {
+            diff = 0;
+        }
+
+        const hours = String(Math.floor(diff / 3600)).padStart(2, "0");
+        const minutes = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+        const seconds = String(diff % 60).padStart(2, "0");
+
+        document.getElementById("workout-timer").textContent =
+            `${hours}:${minutes}:${seconds}`;
+    }
+
+    updateWorkoutTimer();
+    setInterval(updateWorkoutTimer, 1000);
+</script>
+
+{% endblock %}

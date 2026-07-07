@@ -1,0 +1,44 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>{{ dish.title }}</h2>
+
+<p>
+    {{ dish.get_meal_type_display }} |
+    {{ dish.calories }} ккал |
+    белок {{ dish.protein_g }} г |
+    жиры {{ dish.fat_g }} г |
+    углеводы {{ dish.carbs_g }} г
+</p>
+
+<p>
+    Время приготовления: {{ dish.cooking_time_minutes }} минут
+</p>
+
+{% if dish.description %}
+    <h3>Описание</h3>
+    <p>{{ dish.description }}</p>
+{% endif %}
+
+<h3>Ингредиенты</h3>
+
+<ul>
+    {% for ingredient in dish.ingredients.all %}
+        <li>
+            {{ ingredient.food.name }} — {{ ingredient.grams }} г
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Способ приготовления</h3>
+
+{% if dish.cooking_steps %}
+    <pre>{{ dish.cooking_steps }}</pre>
+{% else %}
+    <p>Способ приготовления пока не добавлен.</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'planner:today' %}">Назад к сегодняшнему плану</a>
+</p>
+{% endblock %}

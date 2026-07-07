@@ -1,0 +1,53 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>История прогресса</h2>
+
+{% if checkins %}
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Дата</th>
+            <th>Вес</th>
+            <th>Талия</th>
+            <th>Энергия</th>
+            <th>Голод</th>
+            <th>Утро</th>
+            <th>Тренировка</th>
+            <th>Комментарий</th>
+        </tr>
+
+        {% for checkin in checkins %}
+            <tr>
+                <td>{{ checkin.date }}</td>
+                <td>{{ checkin.weight_kg }} кг</td>
+                <td>
+                    {% if checkin.waist_cm %}
+                        {{ checkin.waist_cm }} см
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ checkin.energy_level }}/10</td>
+                <td>{{ checkin.hunger_level }}/10</td>
+                <td>
+                    {% if checkin.completed_morning_activities %}
+                        ✅
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>
+                    {% if checkin.completed_workouts %}
+                        ✅
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ checkin.comment }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Пока нет записей прогресса.</p>
+{% endif %}
+{% endblock %}

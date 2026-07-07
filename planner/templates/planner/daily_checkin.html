@@ -1,0 +1,22 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Ежедневный отчет</h2>
+
+<p>
+    День {{ day_plan.day_number }},
+    неделя {{ day_plan.week_number }},
+    дата: {{ day_plan.date }}
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Сохранить отчет</button>
+</form>
+
+<p>
+    <a href="{% url 'planner:today' %}">Назад к сегодняшнему плану</a>
+</p>
+{% endblock %}

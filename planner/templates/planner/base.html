@@ -1,0 +1,69 @@
+{% load static %}
+{% load webpush_notifications %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Fitness Planner</title>
+
+    <link rel="stylesheet" href="{% static 'planner/css/style.css' %}">
+
+    {% webpush_header %}
+
+    <link rel="manifest" href="{% static 'planner/manifest.json' %}">
+
+    <meta name="theme-color" content="#263a96">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Fit Planner">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" href="{% static 'planner/icons/icon-192.png' %}">
+
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <div>
+            <h1 class="site-title">Fitness Planner</h1>
+            <p class="site-subtitle">Питание, тренировки и прогресс</p>
+        </div>
+
+        <nav class="main-nav">
+            <a href="{% url 'planner:dashboard' %}">Главная</a>
+            <a href="{% url 'planner:profile_form' %}">Профиль</a>
+            <a href="{% url 'planner:food_preferences' %}">Что я ем</a>
+            <a href="{% url 'planner:today' %}">Сегодня</a>
+            <a href="{% url 'planner:week' 1 %}">Неделя 1</a>
+            <a href="{% url 'planner:shopping_list' 1 %}">Покупки</a>
+            <a href="{% url 'planner:progress_history' %}">Прогресс</a>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Выйти</button>
+            </form>
+
+        </nav>
+    </div>
+</header>
+
+<main class="container main-content">
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+</main>
+
+</body>
+</html>

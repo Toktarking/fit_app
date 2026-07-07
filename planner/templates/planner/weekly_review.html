@@ -1,0 +1,142 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Анализ недели {{ week_number }}</h2>
+
+<p>
+    Период:
+    {{ review.start_date }} — {{ review.end_date }}
+</p>
+
+<h3>Вес и талия</h3>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Показатель</th>
+        <th>Начало недели</th>
+        <th>Конец недели</th>
+        <th>Изменение</th>
+    </tr>
+
+    <tr>
+        <td>Вес</td>
+        <td>
+            {% if review.start_weight_kg %}
+                {{ review.start_weight_kg }} кг
+            {% else %}
+                —
+            {% endif %}
+        </td>
+        <td>
+            {% if review.end_weight_kg %}
+                {{ review.end_weight_kg }} кг
+            {% else %}
+                —
+            {% endif %}
+        </td>
+        <td>
+            {% if review.weight_change_kg %}
+                {{ review.weight_change_kg }} кг
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td>Талия</td>
+        <td>
+            {% if review.start_waist_cm %}
+                {{ review.start_waist_cm }} см
+            {% else %}
+                —
+            {% endif %}
+        </td>
+        <td>
+            {% if review.end_waist_cm %}
+                {{ review.end_waist_cm }} см
+            {% else %}
+                —
+            {% endif %}
+        </td>
+        <td>
+            {% if review.waist_change_cm %}
+                {{ review.waist_change_cm }} см
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<h3>Самочувствие</h3>
+
+<p>
+    Средняя энергия:
+    {% if review.avg_energy_level %}
+        {{ review.avg_energy_level }}/10
+    {% else %}
+        —
+    {% endif %}
+</p>
+
+<p>
+    Средний голод:
+    {% if review.avg_hunger_level %}
+        {{ review.avg_hunger_level }}/10
+    {% else %}
+        —
+    {% endif %}
+</p>
+
+<h3>Выполнение</h3>
+
+<p>Общее выполнение: {{ review.completion_percent }}%</p>
+
+
+
+<progress value="{{ review.completion_percent }}" max="100"></progress>
+
+<p>Утренние активности выполнены: {{ review.completed_morning_count }}</p>
+<p>Вечерние тренировки выполнены: {{ review.completed_evening_count }}</p>
+<p>
+    Приемы пищи:
+    {{ review.completed_meals_count }} из {{ review.total_meals_count }}
+</p>
+
+<h3>Еда вне плана</h3>
+
+<p>Дополнительные калории за неделю: {{ review.total_extra_calories }} ккал</p>
+<p>Среднее в день: {{ review.avg_extra_calories }} ккал</p>
+<p>Дней с едой вне плана: {{ review.extra_food_days }}</p>
+
+<h3>Рекомендация</h3>
+
+<pre>{{ review.recommendation }}</pre>
+
+<h3>Корректировка</h3>
+
+<p>Изменение калорий: {{ review.calorie_adjustment }} ккал</p>
+<p>Изменение шагов: {{ review.steps_adjustment }} шагов</p>
+
+{% if review.is_applied %}
+    <p><strong>Корректировка уже применена.</strong></p>
+{% else %}
+    {% if review.calorie_adjustment != 0 or review.steps_adjustment != 0 %}
+        <form method="post" action="{% url 'planner:apply_review' week_number %}">
+            {% csrf_token %}
+            <button type="submit">
+                Применить корректировку к следующим неделям
+            </button>
+        </form>
+    {% else %}
+        <p>Изменения не требуются.</p>
+    {% endif %}
+{% endif %}
+
+<p>
+    <a href="{% url 'planner:week' week_number %}">
+        Назад к неделе
+    </a>
+</p>
+{% endblock %}

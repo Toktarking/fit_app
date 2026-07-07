@@ -1,0 +1,144 @@
+{% extends "planner/base.html" %}
+
+{% block content %}
+<h2>Неделя {{ week_number }}</h2>
+
+<div class="action-links">
+    <a href="{% url 'planner:weekly_review' week_number %}">
+        Анализ недели и корректировка плана
+    </a>
+
+    <a href="{% url 'planner:generate_week_meals' week_number %}">
+        Сгенерировать питание
+    </a>
+
+    <a href="{% url 'planner:shopping_list' week_number %}">
+        Список покупок
+    </a>
+</div>
+
+<div class="table-wrapper">
+<table>
+    <tr>
+        <th>Дата</th>
+        <th>День</th>
+        <th>Утро</th>
+        <th>Вечер</th>
+        <th>Питание</th>
+    </tr>
+
+    {% for day in day_plans %}
+        <tr>
+            <td>{{ day.date }}</td>
+            <td>{{ day.day_number }}</td>
+
+            <td>
+                {{ day.get_morning_activity_display }}<br>
+                {{ day.morning_duration_minutes }} мин.<br>
+                ≈ {{ day.morning_calories_burned }} ккал<br>
+
+                {% if day.morning_completed %}
+                    ✅ выполнено
+                {% else %}
+                    ⏳ не выполнено
+                {% endif %}
+            </td>
+
+            <td>
+                {{ day.get_evening_activity_display }}<br>
+
+                {% if day.evening_duration_minutes %}
+                    {{ day.evening_duration_minutes }} мин.<br>
+                    ≈ {{ day.evening_calories_burned }} ккал<br>
+
+                    {% if day.evening_activity != "rest" %}
+                        {% if day.evening_completed %}
+                            ✅ выполнено
+                        {% else %}
+                            ⏳ не выполнено
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+
+
+
+
+            <td>
+                {% for meal in day.meals.all %}
+                    <p>
+                        <strong>{{ meal.get_meal_type_display }}:</strong>
+
+                        <a href="{% url 'planner:dish_detail' meal.dish.id %}">
+                            {{ meal.dish.title }}
+                        </a>
+
+                        — {{ meal.dish.calories }} ккал
+
+                        {% if meal.is_completed %}
+                            ✅
+                        {% else %}
+                            ⏳
+                        {% endif %}
+                    </p>
+                {% empty %}
+                    <p>Нет питания</p>
+                {% endfor %}
+
+                <hr>
+
+                <p>
+                    <strong>План питания:</strong>
+                    {{ day.meal_calories_total }} ккал
+                </p>
+
+                {% if day.extra_calories_total > 0 %}
+                    <p>
+                        <strong>Дополнительно съедено:</strong>
+                        {{ day.extra_calories_total }} ккал
+                    </p>
+                {% endif %}
+
+                <p>
+                    <strong>Всего съедено:</strong>
+                    {{ day.total_eaten_calories }} ккал
+                </p>
+
+                <p>
+                    <strong>Цель еды:</strong>
+                    {{ day.calories_goal }} ккал
+                </p>
+
+                {% if day.calories_difference > 0 %}
+                    <p>
+                        <strong>По еде перебор:</strong>
+                        {{ day.calories_abs_difference }} ккал
+                    </p>
+                {% elif day.calories_difference < 0 %}
+                    <p>
+                        <strong>По еде не добрали:</strong>
+                        {{ day.calories_abs_difference }} ккал
+                    </p>
+                {% else %}
+                    <p>
+                        <strong>По еде попали в цель.</strong>
+                    </p>
+                {% endif %}
+
+                <hr>
+
+                <p>
+                    <strong>Тренировки:</strong>
+                    примерно сожжено {{ day.total_calories_burned }} ккал
+                </p>
+            </td>
+
+
+            
+        </tr>
+    {% endfor %}
+</table>
+</div>
+{% endblock %}
